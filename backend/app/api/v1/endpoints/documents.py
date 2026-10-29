@@ -20,6 +20,8 @@ from app.schemas.search import SearchRequest, SearchResponse, SearchResultItem, 
 from app.agents.graph import extraction_graph
 from app.schemas.extraction import ExtractionRequest, ExtractionResponse
 
+from app.services.semantic_cache import semantic_cache
+
 router = APIRouter()
 
 UPLOAD_DIR = Path("uploads")
@@ -178,6 +180,17 @@ async def extract_document_data(
             detail=f"Job {payload.job_id} status is '{job.status.value}'. Ingestion must be COMPLETED before extraction."
         )
     
+    cached_payload, query_embedding, cache_tier = await semantic_cache.lookup(
+        job_id=str(payload.job_id),
+        query=payload.query
+    )
+
+    if cached_payload:
+        print(f"[CACHE HIT - {cache_tier}] Bypassing LangGraph & LLM completely!")
+        return ExtractionResponse(**cached_payload)
+    
+    print(f"[CACHE MISS] Running LangGraph extraction workflow...")
+    
     initial_state = {
         "job_id": str(payload.job_id),
         "query": payload.query,
@@ -185,25 +198,44 @@ async def extract_document_data(
         "extracted_data": None,
         "validation_errors": [],
         "retry_count": 0,
-        "status": "IN_PROGRESS"
+        "status": "IN_PROGRESS",
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_cost_usd": 0.0,
+        "node_latencies_ms": {},
     }
 
     final_state = await extraction_graph.ainvoke(initial_state)
 
     extracted = final_state.get("extracted_data")
     citations = extracted.get("citations", []) if extracted else []
-
     final_status = final_state.get("status", "IN_PROGRESS")
 
     if final_state.get("validation_errors") and final_state.get("retry_count", 0) >= 3:
         final_status = "FAILED_MAX_RETRIES"
     
-    return ExtractionResponse(
+    response_data = ExtractionResponse(
         job_id=str(payload.job_id),
         status=final_status,
         retry_count=final_state.get("retry_count", 0),
         extracted_data=extracted,
         citations=citations,
-        validation_errors=final_state.get("validation_errors", [])
+        validation_errors=final_state.get("validation_errors", []),
+        prompt_tokens=final_state.get("prompt_tokens", 0),
+        completion_tokens=final_state.get("completion_tokens", 0),
+        total_cost_usd=final_state.get("total_cost_usd", 0.0),
+        node_latencies_ms=final_state.get("node_latencies_ms", {}),
     )
+
+    if final_status == "VALIDATED" and extracted and query_embedding:
+        await semantic_cache.store(
+            job_id=str(payload.job_id),
+            query=payload.query,
+            query_embedding=query_embedding,
+            response_payload=response_data.model_dump(),
+            ttl=3600
+        )
+        print(f"[CACHE STORE] Cached validated extraction for 1 hour.")
+    
+    return response_data
     

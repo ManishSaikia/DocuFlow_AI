@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Dict
 from pydantic import BaseModel, Field
 import uuid
 
@@ -36,3 +36,7 @@ class ExtractionResponse(BaseModel):
     extracted_data: Optional[DocumentExtractionResult] = None
     citations: List[int] = Field(default_factory=list)
     validation_errors: List[str] = Field(default_factory=list)
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    total_cost_usd: float = 0.0
+    node_latencies_ms: Dict[str, float] = Field(default_factory=dict)

@@ -41,6 +41,15 @@ services:
       timeout: 3s
       retries: 5
 
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: docuflow_jaeger
+    restart: unless-stopped
+    ports:
+      - "16686:16686" # Jaeger Web UI
+      - "4317:4317" # OTLP gRPC receiver
+      - "4318:4318" # OTLP HTTP receiver
+
 volumes:
   postgres_data:
   redis_data:

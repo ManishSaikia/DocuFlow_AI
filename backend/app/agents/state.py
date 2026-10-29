@@ -11,3 +11,7 @@ class ExtractionGraphState(TypedDict):
     validation_errors: List[str]
     retry_count: int
     status: str # "IN_PROGRESS", "VALIDATED", "FAILED_MAX_RETRIES"
+    prompt_tokens: int
+    completion_tokens: int
+    total_cost_usd: float
+    node_latencies_ms: Dict[str, Any]
