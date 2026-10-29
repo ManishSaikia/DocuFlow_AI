@@ -1,0 +1,32 @@
+pydantic
+pydantic-settings
+
+# Database
+sqlalchemy[asyncio]>=2.0
+asyncpg
+pgvector
+alembic
+psycopg2-binary
+
+# Worker
+celery
+redis
+
+# Document Parsing
+pymupdf
+
+# Web Framework
+fastapi
+uvicorn[standard]
+python-multipart
+
+# Embeddings
+fastembed
+
+# Reranking
+sentence-transformers
+
+# Multi-Agent Workflow
+langgraph
+langchain-core
+langchain-groq
