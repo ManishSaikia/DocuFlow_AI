@@ -8,7 +8,7 @@ from app.core.config import settings
 from app.services.embedder import embedding_service
 
 SCHEMA_VERSION = "v1"
-SIMILARITY_THRESHOLD = 0.95 # Cosine similarity >= 0.95 triggers semantic hit
+SIMILARITY_THRESHOLD = 0.90 # Cosine similarity >= 0.95 triggers semantic hit
 DEFAULT_TTL = 3600 # 1 hour
 
 class SemanticCacheService:

@@ -1,7 +1,7 @@
 import shutil
 import uuid
 from pathlib import Path
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status, Response
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -21,6 +21,8 @@ from app.agents.graph import extraction_graph
 from app.schemas.extraction import ExtractionRequest, ExtractionResponse
 
 from app.services.semantic_cache import semantic_cache
+
+from app.core.tracing import get_current_trace_id
 
 router = APIRouter()
 
@@ -166,8 +168,12 @@ async def search_documents(
 )
 async def extract_document_data(
     payload: ExtractionRequest,
+    response: Response,
     db: AsyncSession = Depends(get_db)
 ):
+    trace_id  = get_current_trace_id()
+    response.headers["X-Trace-Id"] = trace_id
+
     job = await db.get(IngestionJob, payload.job_id)
     if not job:
         raise HTTPException(
@@ -187,6 +193,7 @@ async def extract_document_data(
 
     if cached_payload:
         print(f"[CACHE HIT - {cache_tier}] Bypassing LangGraph & LLM completely!")
+        cached_payload["trace_id"] = trace_id 
         return ExtractionResponse(**cached_payload)
     
     print(f"[CACHE MISS] Running LangGraph extraction workflow...")
@@ -225,6 +232,7 @@ async def extract_document_data(
         completion_tokens=final_state.get("completion_tokens", 0),
         total_cost_usd=final_state.get("total_cost_usd", 0.0),
         node_latencies_ms=final_state.get("node_latencies_ms", {}),
+        trace_id=trace_id
     )
 
     if final_status == "VALIDATED" and extracted and query_embedding:

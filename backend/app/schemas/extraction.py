@@ -40,3 +40,4 @@ class ExtractionResponse(BaseModel):
     completion_tokens: int = 0
     total_cost_usd: float = 0.0
     node_latencies_ms: Dict[str, float] = Field(default_factory=dict)
+    trace_id: Optional[str] = None

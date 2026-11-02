@@ -5,3 +5,9 @@
 .venv/
 __pycache__/
 *.pyc
+
+# CHAT
+previous_chat
+
+# Temporary
+uploads/
