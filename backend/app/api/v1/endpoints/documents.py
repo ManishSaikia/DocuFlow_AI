@@ -24,10 +24,14 @@ from app.services.semantic_cache import semantic_cache
 
 from app.core.tracing import get_current_trace_id
 
+from app.api.dependencies.rate_limiter import RateLimiter
+
 router = APIRouter()
 
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+extract_rate_limiter = RateLimiter(max_request=5, window_seconds=60)
 
 @router.post(
     "/ingest",
@@ -164,6 +168,7 @@ async def search_documents(
 @router.post(
     "/extract",
     response_model=ExtractionResponse,
+    dependencies=[Depends(extract_rate_limiter)],
     summary="Run Stateful Multi-Agent Extraction Workflow"
 )
 async def extract_document_data(
