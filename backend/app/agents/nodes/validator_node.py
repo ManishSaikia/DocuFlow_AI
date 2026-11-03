@@ -3,8 +3,11 @@ from app.agents.state import ExtractionGraphState
 
 from app.core.tracing import tracer
 
+import time
+
 async def validate_extraction_node(state: ExtractionGraphState) -> Dict[str, Any]:
     with tracer.start_as_current_span("node.validator") as span:
+        start_time = time.perf_counter()
         extracted = state.get("extracted_data")
         chunks = state.get("retrieved_chunks", [])
         retry_count = state.get("retry_count", 0)
@@ -71,17 +74,28 @@ async def validate_extraction_node(state: ExtractionGraphState) -> Dict[str, Any
         span.set_attribute("validator.passed", passed)
         span.set_attribute("validator.error_count", len(errors))
 
+        val_ms = round((time.perf_counter() - start_time) * 1000, 2)
+        latencies = dict(state.get("node_latencies_ms") or {})
+        latencies["validation_ms"] = round(latencies.get("validation_ms", 0.0) + val_ms, 2)
+
+        history = list(state.get("validation_history") or [])
+
         if errors:
             span.set_attribute("validator.errors", errors)
+            history.append(f"Attemp {retry_count + 1}: {'; '.join(errors)}")
 
         if not errors:
             return {
                 "validation_errors": [],
-                "status": "VALIDATED"
+                "status": "VALIDATED",
+                "validation_history": history,
+                "node_latencies_ms": latencies
             }
         else:
             return {
                 "validation_errors": errors,
                 "retry_count": retry_count + 1,
-                "status": "IN_PROGRESS"
+                "status": "IN_PROGRESS",
+                "validation_history": history,
+                "node_latencies_ms": latencies
             }

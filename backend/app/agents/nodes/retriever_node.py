@@ -8,6 +8,8 @@ from app.services.reranker import reranker_service
 
 from app.core.tracing import tracer
 
+import time
+
 async def retrieve_context_node(state: ExtractionGraphState) -> Dict[str, Any]:
     """
     Entry node of the LangGraph workflow:
@@ -17,6 +19,7 @@ async def retrieve_context_node(state: ExtractionGraphState) -> Dict[str, Any]:
     4. Formats each chunk with explicit citation headers ([Chunk Index: X | Page: Y]).
     """
     with tracer.start_as_current_span("node.retriever") as span:
+        start_time = time.perf_counter()
         job_id_str = state["job_id"]
         query = state.get("query") or "document title date vendor line items total amount"
         job_uuid = uuid.UUID(str(job_id_str))
@@ -67,10 +70,15 @@ async def retrieve_context_node(state: ExtractionGraphState) -> Dict[str, Any]:
         span.set_attribute("rag.query", query)
         span.set_attribute("rag.retrieved_chunks_count", len(formatted_chunks))
         span.set_attribute("rag.top_rerank_score", float(top_score))
+
+        retrieval_ms = round((time.perf_counter() - start_time) * 1000, 2)
+        latencies = dict(state.get("node_latencies_ms") or {})
+        latencies["retrieval_and_rerank_ms"] = retrieval_ms
         
         return {
             "retrieved_chunks": formatted_chunks,
             "retry_count": 0,
             "validation_errors": [],
             "status": "IN_PROGRESS",
+            "node_latencies_ms": latencies
         }

@@ -9,6 +9,7 @@ class ExtractionGraphState(TypedDict):
     retrieved_chunks: List[Dict[str, Any]]
     extracted_data: Optional[Dict[str, Any]]
     validation_errors: List[str]
+    validation_history: List[str]
     retry_count: int
     status: str # "IN_PROGRESS", "VALIDATED", "FAILED_MAX_RETRIES"
     prompt_tokens: int

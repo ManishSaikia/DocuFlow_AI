@@ -102,6 +102,7 @@ async def extract_data_node(state: ExtractionGraphState) -> Dict[str, Any]:
             node_durations_ms = round((time.perf_counter() - start_time) * 1000, 2)
             latencies = dict(state.get("node_latencies_ms") or {})
             latencies[f"extractor_attempt_{retry_count}"] = node_durations_ms
+            latencies["llm_extraction_ms"] = round(latencies.get("llm_extraction_ms", 0.0) + node_durations_ms, 2)
 
             span.set_attribute("gen_ai.usage.input_tokens", call_prompt_tokens)
             span.set_attribute("gen_ai.usage.output_tokens", call_completion_tokens)

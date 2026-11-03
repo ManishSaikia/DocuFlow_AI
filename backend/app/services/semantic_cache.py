@@ -53,7 +53,7 @@ class SemanticCacheService:
         # TIER 1: Exact Match
         exact_cached = await self.redis.get(exact_key)
         if exact_cached:
-            return json.loads(exact_cached), None, "TIER_1_EXACT"
+            return json.loads(exact_cached), None, "HIT_EXACT", 1.0
 
         # TIER 2: Document-Scoped Semantic Vector Match
         query_embedding = embedding_service.embed_query(query)
@@ -73,9 +73,9 @@ class SemanticCacheService:
                     best_payload = entry["response"]
             
             if best_similarity >= SIMILARITY_THRESHOLD and best_payload is not None:
-                return best_payload, query_embedding, f"TIER_2_SEMANTIC (sim={best_similarity:.3f})"
+                return best_payload, query_embedding, "HIT_SEMANTIC", round(float(best_similarity), 3)
         
-        return None, query_embedding, None
+        return None, query_embedding, "MISS", None
     
     async def store(
         self,

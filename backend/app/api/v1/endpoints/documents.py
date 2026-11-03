@@ -18,7 +18,7 @@ from app.services.reranker import reranker_service
 from app.schemas.search import SearchRequest, SearchResponse, SearchResultItem, RetrievalDebugMetrics
 
 from app.agents.graph import extraction_graph
-from app.schemas.extraction import ExtractionRequest, ExtractionResponse
+from app.schemas.extraction import ExtractionRequest, ExtractionResponse, ExtractionTelemetry, TokenTelemetry, LatencyBreakdown
 
 from app.services.semantic_cache import semantic_cache
 
@@ -176,6 +176,7 @@ async def extract_document_data(
     response: Response,
     db: AsyncSession = Depends(get_db)
 ):
+    request_start = time.perf_counter()
     trace_id  = get_current_trace_id()
     response.headers["X-Trace-Id"] = trace_id
 
@@ -190,16 +191,45 @@ async def extract_document_data(
             status_code = status.HTTP_400_BAD_REQUEST,
             detail=f"Job {payload.job_id} status is '{job.status.value}'. Ingestion must be COMPLETED before extraction."
         )
-    
-    cached_payload, query_embedding, cache_tier = await semantic_cache.lookup(
+
+    cache_start = time.perf_counter()
+    cached_payload, query_embedding, cache_status, cache_sim = await semantic_cache.lookup(
         job_id=str(payload.job_id),
         query=payload.query
     )
+    cache_lookup_ms = round((time.perf_counter() - cache_start) * 1000, 2)
 
     if cached_payload:
-        print(f"[CACHE HIT - {cache_tier}] Bypassing LangGraph & LLM completely!")
-        cached_payload["trace_id"] = trace_id 
-        return ExtractionResponse(**cached_payload)
+        total_ms = round((time.perf_counter() - request_start) * 1000, 2)
+        print(f"[{cache_status}] Bypassing LangGraph & LLM completely!")
+
+        telemetry = ExtractionTelemetry(
+            trace_id=trace_id,
+            cache_status=cache_status,
+            cache_similarity=cache_sim,
+            retry_count=0,
+            validation_history=[],
+            tokens=TokenTelemetry(
+                prompt_tokens=0,
+                completion_tokens=0,
+                total_tokens=0,
+                estimated_cost_usd=0.0
+            ),
+            latency_breakdown_ms=LatencyBreakdown(
+                total_ms=total_ms,
+                cache_lookup_ms=cache_lookup_ms,
+                retrieval_and_rerank_ms=0.0,
+                llm_extraction_ms=0.0,
+                validation_ms=0.0
+            )
+        )
+
+        return ExtractionResponse(
+            job_id=str(payload.job_id),
+            status=cached_payload.get("status", "VALIDATED"),
+            extracted_data=cached_payload.get("extracted_data"),
+            telemetry=telemetry
+        )
     
     print(f"[CACHE MISS] Running LangGraph extraction workflow...")
     
@@ -209,6 +239,7 @@ async def extract_document_data(
         "retrieved_chunks": [],
         "extracted_data": None,
         "validation_errors": [],
+        "validation_history": [],
         "retry_count": 0,
         "status": "IN_PROGRESS",
         "prompt_tokens": 0,
@@ -220,32 +251,54 @@ async def extract_document_data(
     final_state = await extraction_graph.ainvoke(initial_state)
 
     extracted = final_state.get("extracted_data")
-    citations = extracted.get("citations", []) if extracted else []
     final_status = final_state.get("status", "IN_PROGRESS")
 
     if final_state.get("validation_errors") and final_state.get("retry_count", 0) >= 3:
         final_status = "FAILED_MAX_RETRIES"
     
+    total_ms = round((time.perf_counter() - request_start) * 1000, 2)
+    node_lats = final_state.get("node_latencies_ms", {})
+    prompt_tokens = final_state.get("prompt_tokens", 0)
+    completion_tokens = final_state.get("completion_tokens", 0)
+
+    telemetry = ExtractionTelemetry(
+        trace_id=trace_id,
+        cache_status="MISS",
+        cache_similarity=None,
+        retry_count=final_state.get("retry_count", 0),
+        validation_history=final_state.get("validation_history", []),
+        tokens=TokenTelemetry(
+            prompt_tokens=prompt_tokens,
+            completion_tokens=completion_tokens,
+            total_tokens=prompt_tokens+completion_tokens,
+            estimated_cost_usd=final_state.get("total_cost_usd", 0.0)
+        ),
+        latency_breakdown_ms=LatencyBreakdown(
+            total_ms=total_ms,
+            cache_lookup_ms=cache_lookup_ms,
+            retrieval_and_rerank_ms=node_lats.get("retrieval_and_rerank_ms", 0),
+            llm_extraction_ms=node_lats.get("llm_extraction_ms", 0.0),
+            validation_ms=node_lats.get("validation_ms", 0.0)
+        )
+    )
+
     response_data = ExtractionResponse(
         job_id=str(payload.job_id),
         status=final_status,
-        retry_count=final_state.get("retry_count", 0),
         extracted_data=extracted,
-        citations=citations,
-        validation_errors=final_state.get("validation_errors", []),
-        prompt_tokens=final_state.get("prompt_tokens", 0),
-        completion_tokens=final_state.get("completion_tokens", 0),
-        total_cost_usd=final_state.get("total_cost_usd", 0.0),
-        node_latencies_ms=final_state.get("node_latencies_ms", {}),
-        trace_id=trace_id
+        telemetry=telemetry
     )
 
     if final_status == "VALIDATED" and extracted and query_embedding:
+        store_payload = {
+            "status": final_status,
+            "extracted_data": extracted
+        }
         await semantic_cache.store(
             job_id=str(payload.job_id),
             query=payload.query,
             query_embedding=query_embedding,
-            response_payload=response_data.model_dump(),
+            response_payload=store_payload,
             ttl=3600
         )
         print(f"[CACHE STORE] Cached validated extraction for 1 hour.")

@@ -29,15 +29,30 @@ class ExtractionRequest(BaseModel):
     job_id: uuid.UUID = Field(..., description="Ingestion Job ID to extract from")
     query: Optional[str] = Field(default="Extract document metadata, financial figures, line items, and citations.", description="Extraction instructions or focus query")
 
+class TokenTelemetry(BaseModel):
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    total_tokens: int = 0
+    estimated_cost_usd: float = 0.0
+
+class LatencyBreakdown(BaseModel):
+    total_ms: float = 0.0
+    cache_lookup_ms: float = 0.0
+    retrieval_and_rerank_ms: float = 0.0
+    llm_extraction_ms: float = 0.0
+    validation_ms: float = 0.0
+
+class ExtractionTelemetry(BaseModel):
+    trace_id: Optional[str] = None
+    cache_status: str = "MISS"
+    cache_similarity: Optional[float] = None
+    retry_count: int = 0
+    validation_history: List[str] = Field(default_factory=list)
+    tokens: TokenTelemetry = Field(default_factory=TokenTelemetry)
+    latency_breakdown_ms: LatencyBreakdown = Field(default_factory=LatencyBreakdown)
+
 class ExtractionResponse(BaseModel):
     job_id: str
     status: str
-    retry_count: int
     extracted_data: Optional[DocumentExtractionResult] = None
-    citations: List[int] = Field(default_factory=list)
-    validation_errors: List[str] = Field(default_factory=list)
-    prompt_tokens: int = 0
-    completion_tokens: int = 0
-    total_cost_usd: float = 0.0
-    node_latencies_ms: Dict[str, float] = Field(default_factory=dict)
-    trace_id: Optional[str] = None
+    telemetry: ExtractionTelemetry
