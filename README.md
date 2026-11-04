@@ -87,8 +87,8 @@ flowchart TD
   - **`node.retriever`**: Gathers top chunks with citation metadata.
   - **`node.extractor`**: Extracts structured JSON conforming to `DocumentExtractionResult` schema.
   - **`node.validator`**: Executes deterministic, zero-tolerance domain checks:
-    - Verifies line item multiplication: $\text{qty} \times \text{unit\_price} == \text{total\_price} \pm 0.05$.
-    - Verifies mathematical summation: $\sum \text{items} == \text{subtotal} \pm 0.05$.
+    - Verifies line item multiplication: `qty * unit_price == total_price ± 0.05`.
+    - Verifies mathematical summation: `∑(line_items) == subtotal ± 0.05`.
     - Anti-hallucination citation checks: guarantees cited chunk indices exist in retrieved context.
     - Vendor and entity grounding verification.
   - **Critic Loop**: If validation fails, critic error notes are fed directly into Attempt #2's user prompt for targeted self-correction (max 3 retries).
