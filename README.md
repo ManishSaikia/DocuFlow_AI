@@ -132,7 +132,7 @@ flowchart TD
 ### Step 1: Clone the Repository & Configure Environment
 
 ```bash
-git clone https://github.com/your-username/DocuFlow_AI.git
+git clone https://github.com/ManishSaikia/DocuFlow_AI.git
 cd DocuFlow_AI
 ```
 
@@ -145,7 +145,7 @@ cp .env.example .env
 Copy-Item .env.example .env
 ```
 
-Open `.env` and fill in your credentials:
+Open `.env` and configure your credentials:
 ```env
 PROJECT_NAME="DocuFlow AI"
 ENVIRONMENT="development"
@@ -154,7 +154,7 @@ ENVIRONMENT="development"
 POSTGRES_SERVER=localhost
 POSTGRES_PORT=5432
 POSTGRES_USER=docuflow_user
-POSTGRES_PASSWORD=m!MHsn660<
+POSTGRES_PASSWORD=docuflow_secure_password
 POSTGRES_DB=docuflow_db
 
 # Redis (Matches docker-compose.yml)
@@ -188,26 +188,27 @@ docker compose ps
 ### Step 3: Set Up Python Virtual Environment
 
 ```bash
+cd backend
+
 # Create virtual environment
-python -m venv backend/.venv
+python -m venv .venv
 
 # Activate virtual environment
 # Windows (PowerShell):
-.\backend\.venv\Scripts\Activate.ps1
+.\.venv\Scripts\Activate.ps1
 # Linux / macOS:
-source backend/.venv/bin/activate
+source .venv/bin/activate
 
 # Install dependencies
-pip install -r backend/requirements.txt
+pip install -r requirements.txt
 ```
 
 ---
 
-### Step 4: Initialize the Database (pgvector & Schema)
+### Step 4: Initialize Database (pgvector & Schema)
 
 Run the automated database migration script to enable the vector extension and create the required tables and HNSW indexes:
 ```bash
-cd backend
 python -m app.db.init_db
 ```
 *Expected output:*
@@ -254,12 +255,12 @@ The application is now live at:
 Here is a step-by-step example you can execute to test the entire lifecycle:
 
 ### 1. Ingest an Unstructured Document
-Upload a PDF invoice or financial statement:
+Upload a sample PDF invoice or financial statement (a sample is provided in `samples/sample_invoice.pdf`, or use any PDF invoice):
 ```bash
 curl -X POST "http://127.0.0.1:8000/api/v1/documents/ingest" \
      -H "accept: application/json" \
      -H "Content-Type: multipart/form-data" \
-     -F "file=@sample_invoice.pdf"
+     -F "file=@samples/sample_invoice.pdf"
 ```
 **Response (`HTTP 202 Accepted`):**
 ```json
