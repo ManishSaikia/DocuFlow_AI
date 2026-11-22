@@ -1,0 +1,334 @@
+[
+  {
+    "test_id": "eval_001",
+    "archetype": "EXACT_LOOKUP",
+    "job_id": "47dcd284-6420-4e37-869d-33e055b5da6f",
+    "input_query": "What is the exact document title or header?",
+    "ground_truth_chunks": [
+      0
+    ],
+    "expected_extracted_output": {
+      "document_title": "Income Statement (Product)"
+    },
+    "is_adversarial": false
+  },
+  {
+    "test_id": "eval_002",
+    "archetype": "EXACT_LOOKUP",
+    "job_id": "47dcd284-6420-4e37-869d-33e055b5da6f",
+    "input_query": "What is the total net income amount reported?",
+    "ground_truth_chunks": [
+      0
+    ],
+    "expected_extracted_output": {
+      "total_amount": 945.0
+    },
+    "is_adversarial": false
+  },
+  {
+    "test_id": "eval_003",
+    "archetype": "EXACT_LOOKUP",
+    "job_id": "47dcd284-6420-4e37-869d-33e055b5da6f",
+    "input_query": "What is the exact reporting date on the document?",
+    "ground_truth_chunks": [
+      0
+    ],
+    "expected_extracted_output": {
+      "document_date": "September 30, 2021"
+    },
+    "is_adversarial": false
+  },
+  {
+    "test_id": "eval_004",
+    "archetype": "EXACT_LOOKUP",
+    "job_id": "47dcd284-6420-4e37-869d-33e055b5da6f",
+    "input_query": "What is the line item description for net income?",
+    "ground_truth_chunks": [
+      0
+    ],
+    "expected_extracted_output": {
+      "line_items": [
+        {
+          "description": "Net income"
+        }
+      ]
+    },
+    "is_adversarial": false
+  },
+  {
+    "test_id": "eval_005",
+    "archetype": "EXACT_LOOKUP",
+    "job_id": "47dcd284-6420-4e37-869d-33e055b5da6f",
+    "input_query": "What is the unit price and quantity for the primary net income line?",
+    "ground_truth_chunks": [
+      0
+    ],
+    "expected_extracted_output": {
+      "unit_price": 945.0,
+      "quantity": 1.0
+    },
+    "is_adversarial": false
+  },
+  {
+    "test_id": "eval_006",
+    "archetype": "EXACT_LOOKUP",
+    "job_id": "47dcd284-6420-4e37-869d-33e055b5da6f",
+    "input_query": "Provide the total monetary amount in USD or dollars.",
+    "ground_truth_chunks": [
+      0
+    ],
+    "expected_extracted_output": {
+      "total_amount": 945.0
+    },
+    "is_adversarial": false
+  },
+  {
+    "test_id": "eval_007",
+    "archetype": "EXACT_LOOKUP",
+    "job_id": "47dcd284-6420-4e37-869d-33e055b5da6f",
+    "input_query": "What is the classified document type?",
+    "ground_truth_chunks": [
+      0
+    ],
+    "expected_extracted_output": {
+      "document_type": "FINANCIAL_STATEMENT"
+    },
+    "is_adversarial": false
+  },
+  {
+    "test_id": "eval_008",
+    "archetype": "EXACT_LOOKUP",
+    "job_id": "47dcd284-6420-4e37-869d-33e055b5da6f",
+    "input_query": "Extract chunk metadata regarding page numbers.",
+    "ground_truth_chunks": [
+      0
+    ],
+    "expected_extracted_output": {
+      "page_number": 1
+    },
+    "is_adversarial": false
+  },
+  {
+    "test_id": "eval_009",
+    "archetype": "EXACT_LOOKUP",
+    "job_id": "47dcd284-6420-4e37-869d-33e055b5da6f",
+    "input_query": "Verify if any sales tax or VAT is explicitly billed.",
+    "ground_truth_chunks": [
+      0
+    ],
+    "expected_extracted_output": {
+      "tax_amount": null
+    },
+    "is_adversarial": false
+  },
+  {
+    "test_id": "eval_010",
+    "archetype": "EXACT_LOOKUP",
+    "job_id": "47dcd284-6420-4e37-869d-33e055b5da6f",
+    "input_query": "What is the pre-tax subtotal listed in the document?",
+    "ground_truth_chunks": [
+      0
+    ],
+    "expected_extracted_output": {
+      "subtotal": null
+    },
+    "is_adversarial": false
+  },
+  {
+    "test_id": "eval_011",
+    "archetype": "MULTI_HOP_SEMANTIC",
+    "job_id": "47dcd284-6420-4e37-869d-33e055b5da6f",
+    "input_query": "Can you summarize the bottom-line profitability for the company?",
+    "ground_truth_chunks": [
+      0,
+      1
+    ],
+    "expected_extracted_output": {
+      "total_amount": 945.0
+    },
+    "is_adversarial": false
+  },
+  {
+    "test_id": "eval_012",
+    "archetype": "MULTI_HOP_SEMANTIC",
+    "job_id": "47dcd284-6420-4e37-869d-33e055b5da6f",
+    "input_query": "How did product revenues translate into net earnings in Q3?",
+    "ground_truth_chunks": [
+      0,
+      1
+    ],
+    "expected_extracted_output": {
+      "total_amount": 945.0
+    },
+    "is_adversarial": false
+  },
+  {
+    "test_id": "eval_013",
+    "archetype": "MULTI_HOP_SEMANTIC",
+    "job_id": "47dcd284-6420-4e37-869d-33e055b5da6f",
+    "input_query": "Pull out all financial figures mentioned across the product statement.",
+    "ground_truth_chunks": [
+      0,
+      1,
+      2
+    ],
+    "expected_extracted_output": {
+      "total_amount": 945.0
+    },
+    "is_adversarial": false
+  },
+  {
+    "test_id": "eval_014",
+    "archetype": "MULTI_HOP_SEMANTIC",
+    "job_id": "47dcd284-6420-4e37-869d-33e055b5da6f",
+    "input_query": "What are the key financial performance metrics highlighted in this report?",
+    "ground_truth_chunks": [
+      0
+    ],
+    "expected_extracted_output": {
+      "document_title": "Income Statement (Product)"
+    },
+    "is_adversarial": false
+  },
+  {
+    "test_id": "eval_015",
+    "archetype": "MULTI_HOP_SEMANTIC",
+    "job_id": "47dcd284-6420-4e37-869d-33e055b5da6f",
+    "input_query": "Provide a breakdown of all individual billed items and line expenses.",
+    "ground_truth_chunks": [
+      0
+    ],
+    "expected_extracted_output": {
+      "line_items": [
+        {
+          "description": "Net income"
+        }
+      ]
+    },
+    "is_adversarial": false
+  },
+  {
+    "test_id": "eval_016",
+    "archetype": "MULTI_HOP_SEMANTIC",
+    "job_id": "47dcd284-6420-4e37-869d-33e055b5da6f",
+    "input_query": "Which entity or recipient is this statement prepared for?",
+    "ground_truth_chunks": [
+      0
+    ],
+    "expected_extracted_output": {
+      "recipient": null
+    },
+    "is_adversarial": false
+  },
+  {
+    "test_id": "eval_017",
+    "archetype": "MULTI_HOP_SEMANTIC",
+    "job_id": "47dcd284-6420-4e37-869d-33e055b5da6f",
+    "input_query": "What was the financial status of the business as of late 2021?",
+    "ground_truth_chunks": [
+      0
+    ],
+    "expected_extracted_output": {
+      "document_date": "September 30, 2021",
+      "total_amount": 945.0
+    },
+    "is_adversarial": false
+  },
+  {
+    "test_id": "eval_018",
+    "archetype": "MULTI_HOP_SEMANTIC",
+    "job_id": "47dcd284-6420-4e37-869d-33e055b5da6f",
+    "input_query": "Identify the issuing vendor or corporate entity responsible for this filing.",
+    "ground_truth_chunks": [
+      0
+    ],
+    "expected_extracted_output": {
+      "vendor_or_sender": null
+    },
+    "is_adversarial": false
+  },
+  {
+    "test_id": "eval_019",
+    "archetype": "MULTI_HOP_SEMANTIC",
+    "job_id": "47dcd284-6420-4e37-869d-33e055b5da6f",
+    "input_query": "Summarize the overarching financial position outlined in the text.",
+    "ground_truth_chunks": [
+      0,
+      1,
+      2
+    ],
+    "expected_extracted_output": {
+      "total_amount": 945.0
+    },
+    "is_adversarial": false
+  },
+  {
+    "test_id": "eval_020",
+    "archetype": "MULTI_HOP_SEMANTIC",
+    "job_id": "47dcd284-6420-4e37-869d-33e055b5da6f",
+    "input_query": "What confidence score does the evidence in the text support?",
+    "ground_truth_chunks": [
+      0
+    ],
+    "expected_extracted_output": {
+      "confidence_score": 0.95
+    },
+    "is_adversarial": false
+  },
+  {
+    "test_id": "eval_021",
+    "archetype": "ADVERSARIAL_NEGATIVE",
+    "job_id": "47dcd284-6420-4e37-869d-33e055b5da6f",
+    "input_query": "What is the company's European VAT registration tax number in Germany?",
+    "ground_truth_chunks": [],
+    "expected_extracted_output": {
+      "vat_number": null
+    },
+    "is_adversarial": true
+  },
+  {
+    "test_id": "eval_022",
+    "archetype": "ADVERSARIAL_NEGATIVE",
+    "job_id": "47dcd284-6420-4e37-869d-33e055b5da6f",
+    "input_query": "Extract the IBAN and SWIFT wire transfer bank routing code.",
+    "ground_truth_chunks": [],
+    "expected_extracted_output": {
+      "iban": null,
+      "swift": null
+    },
+    "is_adversarial": true
+  },
+  {
+    "test_id": "eval_023",
+    "archetype": "ADVERSARIAL_NEGATIVE",
+    "job_id": "47dcd284-6420-4e37-869d-33e055b5da6f",
+    "input_query": "What is the penalty clause for late delivery mentioned in Section 14.2?",
+    "ground_truth_chunks": [],
+    "expected_extracted_output": {
+      "penalty_clause": null
+    },
+    "is_adversarial": true
+  },
+  {
+    "test_id": "eval_024",
+    "archetype": "ADVERSARIAL_NEGATIVE",
+    "job_id": "47dcd284-6420-4e37-869d-33e055b5da6f",
+    "input_query": "What was the total marketing expenditure spent in Tokyo during Q4 2023?",
+    "ground_truth_chunks": [],
+    "expected_extracted_output": {
+      "tokyo_marketing": null
+    },
+    "is_adversarial": true
+  },
+  {
+    "test_id": "eval_025",
+    "archetype": "ADVERSARIAL_NEGATIVE",
+    "job_id": "47dcd284-6420-4e37-869d-33e055b5da6f",
+    "input_query": "Extract the physical shipping address of the third-party logistics courier.",
+    "ground_truth_chunks": [],
+    "expected_extracted_output": {
+      "shipping_address": null
+    },
+    "is_adversarial": true
+  }
+]
